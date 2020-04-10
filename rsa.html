@@ -1,0 +1,172 @@
+<html lang="en">
+<head>
+<meta charset="utf-8">
+    <!-- BEGIN MATHJAX-STUFF -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS_HTML"></script>
+<!-- END MATHJAX-STUFF -->
+
+
+<title>RSA Algorithm</title>
+<h1>RSA Algorithm</h1>
+<hr class="noshow">
+
+<!-- Body Text begins -->
+<p>
+The RSA algorithm is named after Ron Rivest, Adi Shamir and Len Adleman, who invented it in 1977
+
+The basic technique was first discovered in 1973 by 
+Clifford Cocks 
+of CESG (part of the British GCHQ) but this was a secret until 1997.
+The patent taken out by RSA Labs has expired.
+</p>
+    
+    
+<p>
+The RSA cryptosystem is the most widely-used public key cryptography algorithm in the world.
+It can be used to encrypt a message without the need to exchange a secret key separately.
+</p>
+
+<p>
+The RSA algorithm can be used for both public key encryption and digital signatures. 
+Its security is based on the difficulty of factoring large integers. 
+</p>
+
+<p>
+Party A can send an encrypted message to party B without any prior exchange of secret keys.
+A just uses B's public key to encrypt the message and B decrypts it using the private key, which only he knows.
+RSA can also be used to sign a message, 
+so A can sign a message using their private key and B can verify it using A's public key. 
+</p>
+
+    
+    
+
+<h2><a id="keygen"></a>Key Generation Algorithm</h2>
+<p>This is the original algorithm.</p>
+<ol class="vss">
+<li>Generate two large random primes, $p$ and $q$, of approximately equal size such that
+their product $n = pq$ is of the required bit length, e.g. 1024 bits. 
+
+</li>
+<li>Compute $n = pq$ and  $\phi = (p-1)(q-1)$.
+</li>
+	
+<li>Choose an integer $e$, 
+$1 &lt; e &lt; \phi$, such that $\gcd(e, \phi) = 1$. 
+</li>
+
+<li>Compute the secret exponent $d$, $1 &lt; d &lt; \phi$, such that
+$ed \equiv 1 \bmod \phi$. </li>
+
+<li>The public key is $(n, e)$ and the private key $(d, p, q)$. Keep all the values d, p, q and $\phi$ secret.
+[Sometimes the private key is written as $(n, d)$ because you need the value of n when using d.
+Other times we might write the key pair as $((N, e), d)$.]
+</li>
+</ol>
+<ul>
+<li>n is known as the <dfn>modulus</dfn>.</li>
+<li>e is known as the <dfn>public exponent</dfn> or <dfn>encryption exponent</dfn> or just the <dfn>exponent</dfn>.</li>
+<li>d is known as the <dfn>secret exponent</dfn> or <dfn>decryption exponent</dfn>.</li>
+</ul>
+
+    
+<h2><a id="practicalkeygen"></a>A practical key generation algorithm</h2>
+<p>
+Incorporating the advice given in the <a href="#notespractical">notes below</a>, 
+a practical algorithm to generate an RSA key pair is given below.
+Typical bit lengths are $k = 1024, 2048, 3072, 4096,...$, with increasing computational expense for larger values.
+You will not go far wrong if you choose $e$ as 65537 (=0x10001) in step (1).
+</p>
+<hr>
+<b>Algorithm:</b> Generate an RSA key pair.
+<hr>
+INPUT: Required modulus bit length, $k$. 
+<br>
+OUTPUT: An RSA key pair $((N,e), d)$ where N is the modulus, the product of two primes ($N=pq$) not exceeding $k$ bits in length; 
+$e$ is the public exponent, a number less than and coprime to $(p-1)(q-1)$; 
+and $d$ is the private exponent such that $ed \equiv 1 \bmod {(p-1)(q-1)}$.
+<br>
+<ol>
+<li>Select a value of $e$ from ${3, 5, 17, 257, 65537}$</li>
+<li><b>repeat</b></li>
+<li>&nbsp;&nbsp;&nbsp;p &larr; genprime(k/2)</li>
+<li><b>until</b> $(p \bmod e) \ne 1$
+<li><b>repeat</b></li>
+<li>&nbsp;&nbsp;&nbsp;q &larr; genprime(k - k/2)</li>
+<li><b>until</b> $(q \bmod e) \ne 1$
+<li>N &larr; pq</li>
+<li>L &larr; (p-1)(q-1)</li>
+<li>d &larr; modinv(e, L)</li>
+<li><b>return</b> $(N, e, d)$</li>
+</ol>
+<hr>
+<p>
+The function <code>genprime(b)</code> returns a prime of exactly $b$ bits, with the $b$th bit set to 1.
+Note that the operation $k/2$ is <em>integer</em> division giving the integer quotient with no fraction.
+</p>
+<p>
+If you've chosen $e = 65537$ then the chances are that the first prime returned in steps (3) and (6) will pass the tests in steps (4) and (7), 
+so each repeat-until loop will most likely just take one iteration. 
+The final value of $N$ may have a bit length slightly short of the target $k$. 
+This actually does not matter too much (providing the message m is always &lt; N), 
+but some schemes require a modulus of exact length.
+If this is the case, then just repeat the entire algorithm until you get one.
+It should not take too many goes. 
+
+</p>
+
+<h2><a id="encryption"></a>Encryption</h2>
+<p>
+Sender A does the following:-
+</p>
+<ol>
+<li>Obtains the recipient B's public key $(n, e)$.</li>
+<li>Represents the plaintext message as a positive integer $m$ with $1 &lt; m &lt; n$ 
+	. </li>
+<li>Computes the ciphertext $c = m^e \bmod n$.</li>
+<li>Sends the ciphertext $c$ to B.</li>
+</ol>
+
+<h2><a id="decryption"></a>Decryption</h2>
+<p>
+Recipient B does the following:-
+</p>
+<ol>
+<li>Uses his private key $(n, d)$ to compute $m = c^{d} \bmod n$.</li>
+<li>Extracts the plaintext from the message representative $m$.</li>
+</ol>
+
+<h2><a id="signing"></a>Digital signing</h2>
+<p>
+Sender A does the following:-
+</p>
+<ol>
+<li>Creates a <dfn>message digest</dfn> of the information to be sent.</li>
+<li>Represents this digest as an integer $m$ between 1 and $n-1$ \.</li>
+<li>Uses her <em>private</em> key $(n, d)$ to compute the signature $s = m^{d} \bmod n$.</li>
+<li>Sends this signature $s$ to the recipient, B.</li>
+</ol>
+
+<h2><a id="verification"></a>Signature verification</h2>
+<div>
+Recipient B does the following (<i>older method</i>):-
+
+<ol>
+<li>Uses sender A's public key $(n, e)$ to compute integer $v = s^{e} \bmod n$.</li>
+<li>Extracts the message digest $H$ from this integer.</li>
+<li>Independently computes the message digest $H'$ of the information that has been signed.</li>
+<li>If both message digests are identical, i.e. $H=H'$, the signature is valid.</li>
+</ol>
+</div>
+<div>
+<i>More secure method</i>:-
+<ol>
+<li>Uses sender A's public key $(n, e)$ to compute integer $v = s^{e} \bmod n$.</li>
+<li>Independently computes the message digest $H'$ of the information that has been signed.</li>
+<li>Computes the expected representative integer $v'$ by encoding the expected message digest $H'$.</li>
+<li>If $v=v'$, the signature is valid.</li>
+</ol>
+</div>
