@@ -1,0 +1,41 @@
+<html lang="en">
+<head>
+<meta charset="utf-8">
+    <!-- BEGIN MATHJAX-STUFF -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS_HTML"></script>
+<!-- END MATHJAX-STUFF -->
+
+ <h3>Four possible approaches to attacking the RSA algorithm are as follows:</h3>
+
+<p>a. Brute force: This involves trying all possible private keys. The defence against the brute-force approach is to use a large key space. However, because the calculations involved, both in key generation and in encryption/decryption, are complex, the larger the size of the key, the slower the system will run.</p>
+
+<p>b. Mathematical attacks: There are several approaches, all equivalent in effort to factoring the product of two primes. Under the Factoring Problem William Stallings identifies three approaches to attacking RSA mathematically :</p>
+
+<p>Factor n into its two prime factors. This enables calculation of f(n) = (p 1) x (q 1), which, in turn, enables determination of d e1 (mod f(n)).</p>
+
+<p>Determine f(n) directly, without first determining p and q. Again, this enables determination of d e1 (mod f(n)).</p>
+
+<p>Determine d directly, without first determining f(n).
+
+<p>c. Timing attacks: These depend on the running time of the decryption algorithm whereby a snooper can determine a private key by keeping track of how long a computer takes to decipher messages. Although the timing attack is a serious threat, there are simple countermeasures that can be used, including the following :</p>
+
+<p>A simple way to prevent timing attacks, regardless of algorithm, is to ensure that all operations with a given algorithm take the same amount of time by “quantizing” the operations into a fixed time period. This approach is highly dependent on the environment, and may degrade performance, but it requires no modification to the algorithm implementations.</p>
+
+<p>For RSA, one can prevent the attacks by introducing what is called “blinding” into the cryptographic operations, without changing the underlying implementation. This process prevents the attacker from knowing what ciphertext bits are being processed inside the computer and therefore prevents the bit-by-bit analysis essential to the timing attack.</p>
+
+<p>d. Protocol attacks: Protocol attacks exploit weaknesses in the way RSA is being used. Among the better known ones are the attacks that exploit the malleability of RSA.</p>
+
+<p>Many of these attacks can be avoided by using padding. Padding a message within the RSA encryption scheme is done by first off generating a string PS of length kâˆ’|M|âˆ’2|H|âˆ’2 of zeroed bytes. The length of PS may be zero. Then Concatenate Hash(L), PS, a single byte with hexadecimal value 0x01, and the message M to form a data block DB of length kâˆ’|H|âˆ’1 bytes as DB = Hash(L)||PS||0x01||M. In addition generate a random byte string seed of length |H|. Let dbMask=MGF(seed,kâˆ’|H|âˆ’1), where MGF is the mask generation function. In practice, a hash function such as SHA-1 is often used as MFG. Let maskedDB =DBâŠ•dbMask .
+    </p>
+ <p>Then let seedMask = MGF(maskedDB, |H|) and maskedSeed = seedâŠ•seedMask. </p>
+
+<p>Concatenate a single byte with hexadecimal value 0x00, maskedSeed and maskedDB to form an encoded message EM of length k bytes as EM = 0x00||maskedSeed||maskedDB. </p>
+
+<p>On the decryption side, the structure of the decrypted message has to be verified. For instance, if there is no byte with hexadecimal value 0x01 to separate PS from M, a decryption error occurred. In any case, returning a decryption error to the potential attacker should not reveal any information about the plaintext . </p>
+
+<p>Conclusion </p>
+
+<p>I have looked into the RSA algorithm which is a method for implementing public-key cryptosystems whose security rests in part on the difficulty of factoring large numbers. Looking through operations of the algorithm, possible attacks and the counter measures I can conclude by saying that it permits secure communications to be established without the use of couriers to carry keys, and it also permits one to sign digitized documents.   </p>
